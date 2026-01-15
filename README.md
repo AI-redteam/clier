@@ -135,7 +135,7 @@ region = us-east-1
 
 ⚠️ **Important Security Notes:**
 
-- These are **temporary STS credentials** that expire (typically 1-12 hours depending on your IdP configuration)
+- These are **temporary STS credentials** that expire (typically 15 mins depending on your IdP configuration)
 - **Never share or commit** these credentials
 - The extension only reads credentials from **your local browser session**
 - **No data is transmitted** anywhere external—everything stays local
