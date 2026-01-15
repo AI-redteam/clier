@@ -9,7 +9,7 @@
                                                
                          
 
-> Console → CLI credentials. The reverse of [consoler](https://github.com/aws-samples/consoler).
+> Console → CLI credentials. The reverse of [consoler](https://github.com/NetSPI/aws_consoler).
 
 A browser extension that intercepts and displays AWS STS temporary credentials from your AWS Console session, making them easy to copy for use in CLI tools, scripts, or local development.
 
