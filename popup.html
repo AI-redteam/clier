@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS Credentials</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      width: 450px;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #333;
+    }
+
+    .header svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ff9900;
+    }
+
+    .status {
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status.loading {
+      background: #2a2a4a;
+      color: #aaa;
+    }
+
+    .status.success {
+      background: #1a3a2a;
+      color: #4ade80;
+    }
+
+    .status.warning {
+      background: #3a3a1a;
+      color: #fbbf24;
+    }
+
+    .status.error {
+      background: #3a1a1a;
+      color: #f87171;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #555;
+      border-top-color: #ff9900;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .meta-info {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      background: #0d0d1a;
+      border-radius: 6px;
+    }
+
+    .meta-info span {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .meta-info span:last-child {
+      margin-bottom: 0;
+    }
+
+    .credential-section {
+      margin-bottom: 12px;
+    }
+
+    .credential-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .credential-value {
+      background: #0d0d1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      word-break: break-all;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .credential-text {
+      flex: 1;
+      line-height: 1.4;
+      color: #ddd;
+      max-height: 60px;
+      overflow-y: auto;
+    }
+
+    .credential-text.token {
+      max-height: 80px;
+    }
+
+    .copy-btn {
+      background: #ff9900;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover {
+      background: #ffad33;
+    }
+
+    .copy-btn.copied {
+      background: #4ade80;
+    }
+
+    .format-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #333;
+    }
+
+    .format-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .format-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ff9900;
+    }
+
+    .format-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .format-tab {
+      background: #2a2a4a;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: #aaa;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .format-tab:hover {
+      background: #3a3a5a;
+    }
+
+    .format-tab.active {
+      background: #ff9900;
+      color: #000;
+    }
+
+    .format-output {
+      background: #0d0d1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .format-output .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+    }
+
+    .format-content {
+      color: #ddd;
+      padding-right: 60px;
+    }
+
+    .info-box {
+      background: #1a2a3a;
+      border: 1px solid #2a4a6a;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-top: 16px;
+      font-size: 11px;
+      color: #88aacc;
+      line-height: 1.5;
+    }
+
+    .info-box strong {
+      color: #aaccee;
+    }
+
+    .info-box.error {
+      background: #2a1a1a;
+      border-color: #4a2a2a;
+      color: #cc8888;
+    }
+
+    .info-box.error strong {
+      color: #ff8888;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .action-btn {
+      flex: 1;
+      background: #2a2a4a;
+      color: #ddd;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: #3a3a5a;
+      border-color: #ff9900;
+    }
+
+    .action-btn.danger {
+      border-color: #662222;
+    }
+
+    .action-btn.danger:hover {
+      background: #3a1a1a;
+      border-color: #ff4444;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .expiry-warning {
+      color: #fbbf24;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .expiry-ok {
+      color: #4ade80;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ff9900" stroke-width="2">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+    <h1>clier</h1>
+  </div>
+
+  <div id="status" class="status loading">
+    <div class="spinner"></div>
+    <span>Checking for credentials...</span>
+  </div>
+
+  <div id="credentials-container" class="hidden">
+    <div class="meta-info" id="meta-info"></div>
+
+    <div class="credential-section">
+      <div class="credential-label">Access Key ID</div>
+      <div class="credential-value">
+        <span class="credential-text" id="access-key"></span>
+        <button class="copy-btn" data-target="access-key">Copy</button>
+      </div>
+    </div>
+
+    <div class="credential-section">
+      <div class="credential-label">Secret Access Key</div>
+      <div class="credential-value">
+        <span class="credential-text" id="secret-key"></span>
+        <button class="copy-btn" data-target="secret-key">Copy</button>
+      </div>
+    </div>
+
+    <div class="credential-section">
+      <div class="credential-label">Session Token</div>
+      <div class="credential-value">
+        <span class="credential-text token" id="session-token"></span>
+        <button class="copy-btn" data-target="session-token">Copy</button>
+      </div>
+    </div>
+
+    <div class="credential-section">
+      <div class="credential-label">Region</div>
+      <div class="credential-value">
+        <span class="credential-text" id="region"></span>
+        <button class="copy-btn" data-target="region">Copy</button>
+      </div>
+    </div>
+
+    <div id="expiry-info"></div>
+
+    <div class="format-section">
+      <div class="format-header">
+        <span class="format-label">Export Format</span>
+        <div class="format-tabs">
+          <button class="format-tab active" data-format="env">Bash Export</button>
+          <button class="format-tab" data-format="powershell">PowerShell</button>
+          <button class="format-tab" data-format="credentials">AWS Config</button>
+          <button class="format-tab" data-format="json">JSON</button>
+        </div>
+      </div>
+      <div class="format-output">
+        <button class="copy-btn" id="copy-format">Copy All</button>
+        <div class="format-content" id="format-content"></div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>How it works:</strong> This extension intercepts the 
+      <code>/console/tb/creds</code> API response when the AWS Console fetches 
+      temporary credentials. Credentials are captured automatically when you 
+      navigate to or refresh the AWS Console.
+    </div>
+  </div>
+
+  <div id="waiting-container" class="hidden">
+    <div class="info-box">
+      <strong>Waiting for credentials...</strong><br><br>
+      The extension intercepts credentials when AWS Console requests them. To trigger this:
+      <br><br>
+      1. Make sure you're logged into the AWS Console<br>
+      2. Navigate to any AWS Console page<br>
+      3. If needed, refresh the page (F5)<br><br>
+      Credentials will appear here automatically once captured.
+    </div>
+  </div>
+
+  <div id="error-container" class="hidden">
+    <div class="info-box error">
+      <strong>Not on AWS Console</strong><br><br>
+      This extension only works on AWS Console pages. Please navigate to 
+      <a href="https://console.aws.amazon.com" target="_blank" style="color: #88aaff;">console.aws.amazon.com</a>
+      and ensure you're logged in.
+    </div>
+  </div>
+
+  <div class="action-buttons">
+    <button class="action-btn" id="refresh-btn">🔄 Check Again</button>
+    <button class="action-btn danger" id="clear-btn">🗑️ Clear Stored</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
