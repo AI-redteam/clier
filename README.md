@@ -1,4 +1,13 @@
-# clier
+
+
+```
+ ▗▄▄▖▗▖   ▗▄▄▄▖▗▄▄▄▖▗▄▄▖ 
+▐▌   ▐▌     █  ▐▌   ▐▌ ▐▌
+▐▌   ▐▌     █  ▐▛▀▀▘▐▛▀▚▖
+▝▚▄▄▖▐▙▄▄▖▗▄█▄▖▐▙▄▄▖▐▌ ▐▌                      
+```
+                                               
+                         
 
 > Console → CLI credentials. The reverse of [consoler](https://github.com/aws-samples/consoler).
 
@@ -7,6 +16,7 @@ A browser extension that intercepts and displays AWS STS temporary credentials f
 ## How It Works
 
 AWS Console credentials are stored in the **JavaScript heap (RAM)** only—not in localStorage, sessionStorage, or cookies. This is by design for security (XSS mitigation, auto-expiry on tab close).
+<img width="1468" height="778" alt="image" src="https://github.com/user-attachments/assets/6e594bd7-9dbb-4519-ac72-a83ee4a6ec81" />
 
 This extension uses **network interception** (monkey-patching `window.fetch` and `XMLHttpRequest`) to capture credentials when the AWS Console fetches them from the `/console/tb/creds` endpoint.
 
@@ -27,6 +37,10 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
 5. The isolated content script catches this and stores to `chrome.storage.local`
 6. The popup displays whatever credentials have been captured
 
+<img width="940" height="701" alt="image" src="https://github.com/user-attachments/assets/9203fb01-4ff2-4ba3-8f5e-e409cc40aebb" />
+
+<img width="449" height="422" alt="image" src="https://github.com/user-attachments/assets/f806559b-e25b-460e-86eb-443912c86698" />
+
 ## Features
 
 - 🔐 **Automatic credential capture** - Intercepts browserCreds API responses
@@ -43,7 +57,7 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
 
 ### Chrome / Chromium-based Browsers (Edge, Brave, Arc, etc.)
 
-1. Download and unzip this extension
+1. Clone the repo 
 2. Open your browser's extension page:
    - Chrome: `chrome://extensions`
    - Edge: `edge://extensions`
@@ -53,7 +67,7 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
 5. Select the `clier` folder
 6. The extension icon (orange lock) should appear in your toolbar
 
-### Firefox
+### Firefox (sucks for this just don't bother)
 
 Firefox requires modifications for Manifest V3. For Firefox:
 
@@ -166,20 +180,6 @@ clier/
 - **`host_permissions`** for `*.console.aws.amazon.com`: Inject content scripts on AWS Console pages
 - **`web_accessible_resources`**: Allow the injected script to be loaded into the page context
 
-## Alternative Approaches
-
-If you need credentials programmatically without a browser extension:
-
-### AWS CLI SSO
-```bash
-aws sso login --profile my-profile
-aws sts get-caller-identity --profile my-profile
-```
-
-### AWS CLI with MFA
-```bash
-aws sts get-session-token --serial-number arn:aws:iam::ACCOUNT:mfa/USER --token-code 123456
-```
 
 ## License
 
