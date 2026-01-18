@@ -227,6 +227,44 @@ function displayCredentials(creds) {
   }
 
   updateFormatOutput();
+  generateQRCode();
+}
+
+function generateQRCode() {
+  if (!currentService || !allCredentials[currentService]) return;
+
+  const creds = allCredentials[currentService];
+  const qrContainer = document.getElementById('qr-container');
+
+  // Create compact JSON for QR code (short keys to minimize size)
+  const qrData = JSON.stringify({
+    a: creds.accessKeyId,
+    s: creds.secretAccessKey,
+    t: creds.sessionToken,
+    r: creds.region || 'us-east-1',
+    e: creds.expiration
+  });
+
+  // Clear previous QR code
+  qrContainer.innerHTML = '';
+
+  try {
+    // Use QRCode.js library with low error correction for max capacity
+    new QRCode(qrContainer, {
+      text: qrData,
+      width: 200,
+      height: 200,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.L
+    });
+  } catch (e) {
+    console.error('Failed to generate QR code:', e);
+    qrContainer.innerHTML = `<span style="color: #888; font-size: 11px; text-align: center; display: block;">
+      Data too large for QR (${qrData.length} bytes)<br>
+      Use copy/paste or photo the text instead
+    </span>`;
+  }
 }
 
 function updateFormatOutput() {

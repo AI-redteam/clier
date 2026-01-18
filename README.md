@@ -16,7 +16,7 @@
 Perfect for:
 - **Pentesters** - Extract credentials from compromised sessions for offline analysis
 - **Developers in locked-down environments** - Get CLI access when you only have console access
-- **Airgapped VDI users** - Bridge the gap between restricted console-only environments and your local tools
+- **Airgapped VDI users** - Scan the QR code with your phone to bypass clipboard restrictions and get credentials out
 - **Anyone stuck with SSO/federated console access** - Finally use the AWS CLI without begging for access keys
 
 Supports **multiple AWS services** - each service (S3, EC2, Lambda, etc.) has its own scoped credentials that can be captured and exported independently.
@@ -64,6 +64,7 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
   - PowerShell environment variables (`$env:AWS_...`)
   - AWS credentials file format (`~/.aws/credentials`)
   - JSON format
+- 📱 **QR code export** - Each service displays a scannable QR code for instant credential transfer to your phone—perfect for airgapped environments where clipboard is blocked
  <img width="435" height="348" alt="Screenshot 2026-01-17 at 9 06 04 PM" src="https://github.com/user-attachments/assets/323c93c3-2d54-4035-aea0-6ebdf74d881b" />
 
     
@@ -153,6 +154,37 @@ region = us-east-1
 }
 ```
 
+### QR Code Format
+
+The QR code contains a compact JSON with short keys to maximize capacity:
+
+```json
+{
+  "a": "ASIAXXXXXXXXXXX",
+  "s": "xxxxxxxxxxxxxxxxxxxxxxx",
+  "t": "xxxxxxxxxxxxxxxxxxxxxxx...",
+  "r": "us-east-1",
+  "e": "2024-01-15T12:00:00Z"
+}
+```
+
+| Key | Field |
+|-----|-------|
+| `a` | accessKeyId |
+| `s` | secretAccessKey |
+| `t` | sessionToken |
+| `r` | region |
+| `e` | expiration |
+
+**To use scanned credentials:**
+```bash
+# After scanning, parse the JSON and export:
+export AWS_ACCESS_KEY_ID="<a value>"
+export AWS_SECRET_ACCESS_KEY="<s value>"
+export AWS_SESSION_TOKEN="<t value>"
+export AWS_DEFAULT_REGION="<r value>"
+```
+
 ## Security Considerations
 
 ⚠️ **Important Security Notes:**
@@ -195,6 +227,7 @@ clier/
 ├── injected.js           # Fetch interceptor (main world)
 ├── popup.html            # Popup UI
 ├── popup.js              # Popup logic
+├── qrcode.min.js         # QR code generator library
 ├── icons/
 │   ├── icon16.png
 │   ├── icon48.png
@@ -274,9 +307,10 @@ Many organizations restrict AWS access to locked-down VDI environments with no C
 2. **Authenticate to AWS Console** via your normal SSO/federated flow
 3. **Navigate to the services you need** - Capture credentials for S3, Lambda, Secrets Manager, etc.
 4. **Exfiltrate credentials** - Options depending on your restrictions:
+   - **QR code scan** - Point your phone at the QR code displayed in the popup (fastest method)
    - **Copy/paste** - If clipboard works between VDI and local machine
    - **Type them out** - Manual but works when clipboard is blocked
-   - **Screenshot/photo** - JSON format is QR-code friendly if you're desperate
+   - **Photo the QR** - Screenshot/photo the QR code for later scanning
    - **Email to yourself** - If webmail is accessible
 5. **Use credentials on your local machine**:
    ```bash

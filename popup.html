@@ -349,6 +349,46 @@
       color: #888;
       margin-left: 8px;
     }
+
+    .qr-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #333;
+    }
+
+    .qr-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .qr-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ff9900;
+    }
+
+    .qr-container {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .qr-container img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .qr-hint {
+      font-size: 10px;
+      color: #666;
+      text-align: center;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -425,6 +465,16 @@
       </div>
     </div>
 
+    <div class="qr-section">
+      <div class="qr-header">
+        <span class="qr-label">QR Code Export</span>
+      </div>
+      <div class="qr-container" id="qr-container">
+        <!-- QR code generated dynamically -->
+      </div>
+      <div class="qr-hint">Scan with phone camera to capture credentials (compact JSON)</div>
+    </div>
+
     <div class="info-box">
       <strong>How it works:</strong> This extension intercepts credential API
       responses when AWS Console fetches temporary credentials. Each AWS service
@@ -460,6 +510,7 @@
     <button class="action-btn danger" id="clear-all-btn">🗑️ Clear All</button>
   </div>
 
+  <script src="qrcode.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
