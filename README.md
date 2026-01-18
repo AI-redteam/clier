@@ -16,7 +16,9 @@ A browser extension that intercepts and displays AWS STS temporary credentials f
 ## How It Works
 
 AWS Console credentials are stored in the **JavaScript heap (RAM)** only—not in localStorage, sessionStorage, or cookies. This is by design for security (XSS mitigation, auto-expiry on tab close).
-<img width="1468" height="778" alt="image" src="https://github.com/user-attachments/assets/6e594bd7-9dbb-4519-ac72-a83ee4a6ec81" />
+
+<img width="455" height="604" alt="Screenshot 2026-01-17 at 9 05 37 PM" src="https://github.com/user-attachments/assets/fba8a7e6-40c5-416c-9d85-5db1831e8346" />
+
 
 This extension uses **network interception** (monkey-patching `window.fetch` and `XMLHttpRequest`) to capture credentials when the AWS Console fetches them from service-specific `/{service}/tb/creds` endpoints.
 
@@ -38,10 +40,14 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
 5. The isolated content script catches this and stores to `chrome.storage.local` keyed by service
 6. The popup displays service tabs to switch between captured credentials
 
-<img width="940" height="701" alt="image" src="https://github.com/user-attachments/assets/9203fb01-4ff2-4ba3-8f5e-e409cc40aebb" />
 
-<img width="449" height="422" alt="image" src="https://github.com/user-attachments/assets/f806559b-e25b-460e-86eb-443912c86698" />
+---
+<img width="179" height="33" alt="Screenshot 2026-01-17 at 9 05 51 PM" src="https://github.com/user-attachments/assets/c114b3fc-dd98-4e17-84b8-cfb134ab584f" />
 
+---
+<img width="435" height="348" alt="Screenshot 2026-01-17 at 9 06 04 PM" src="https://github.com/user-attachments/assets/323c93c3-2d54-4035-aea0-6ebdf74d881b" />
+
+---
 ## Features
 
 - 🔐 **Automatic credential capture** - Intercepts credentials from any AWS service endpoint
