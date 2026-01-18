@@ -301,6 +301,54 @@
       font-size: 11px;
       margin-top: 4px;
     }
+
+    .service-tabs-container {
+      margin-bottom: 16px;
+    }
+
+    .service-tabs-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .service-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .service-tab {
+      background: #2a2a4a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: #aaa;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .service-tab:hover {
+      background: #3a3a5a;
+      border-color: #ff9900;
+    }
+
+    .service-tab.active {
+      background: #ff9900;
+      color: #000;
+      border-color: #ff9900;
+    }
+
+    .service-count {
+      font-size: 11px;
+      color: #888;
+      margin-left: 8px;
+    }
   </style>
 </head>
 <body>
@@ -315,6 +363,13 @@
   <div id="status" class="status loading">
     <div class="spinner"></div>
     <span>Checking for credentials...</span>
+  </div>
+
+  <div id="service-tabs-container" class="service-tabs-container hidden">
+    <div class="service-tabs-label">Services<span id="service-count" class="service-count"></span></div>
+    <div id="service-tabs" class="service-tabs">
+      <!-- Service tabs generated dynamically -->
+    </div>
   </div>
 
   <div id="credentials-container" class="hidden">
@@ -371,10 +426,10 @@
     </div>
 
     <div class="info-box">
-      <strong>How it works:</strong> This extension intercepts the 
-      <code>/console/tb/creds</code> API response when the AWS Console fetches 
-      temporary credentials. Credentials are captured automatically when you 
-      navigate to or refresh the AWS Console.
+      <strong>How it works:</strong> This extension intercepts credential API
+      responses when AWS Console fetches temporary credentials. Each AWS service
+      (S3, EC2, Lambda, etc.) has its own scoped credentials. Navigate to different
+      services to capture their credentials.
     </div>
   </div>
 
@@ -401,7 +456,8 @@
 
   <div class="action-buttons">
     <button class="action-btn" id="refresh-btn">🔄 Check Again</button>
-    <button class="action-btn danger" id="clear-btn">🗑️ Clear Stored</button>
+    <button class="action-btn danger" id="clear-current-btn">🗑️ Clear Current</button>
+    <button class="action-btn danger" id="clear-all-btn">🗑️ Clear All</button>
   </div>
 
   <script src="popup.js"></script>

@@ -11,20 +11,21 @@
 
 > Console → CLI credentials. The reverse of [consoler](https://github.com/NetSPI/aws_consoler).
 
-A browser extension that intercepts and displays AWS STS temporary credentials from your AWS Console session, making them easy to copy for use in CLI tools, scripts, or local development.
+A browser extension that intercepts and displays AWS STS temporary credentials from your AWS Console session, making them easy to copy for use in CLI tools, scripts, or local development. Supports **multiple AWS services** - each service (S3, EC2, Lambda, etc.) has its own scoped credentials that can be captured and exported independently.
 
 ## How It Works
 
 AWS Console credentials are stored in the **JavaScript heap (RAM)** only—not in localStorage, sessionStorage, or cookies. This is by design for security (XSS mitigation, auto-expiry on tab close).
 <img width="1468" height="778" alt="image" src="https://github.com/user-attachments/assets/6e594bd7-9dbb-4519-ac72-a83ee4a6ec81" />
 
-This extension uses **network interception** (monkey-patching `window.fetch` and `XMLHttpRequest`) to capture credentials when the AWS Console fetches them from the `/console/tb/creds` endpoint.
+This extension uses **network interception** (monkey-patching `window.fetch` and `XMLHttpRequest`) to capture credentials when the AWS Console fetches them from service-specific `/{service}/tb/creds` endpoints.
 
 ### Technical Flow
 
-1. When you load/refresh the AWS Console, it makes a request to `https://{region}.console.aws.amazon.com/console/tb/creds`
+1. When you load/refresh any AWS Console service, it makes a request to `https://{region}.console.aws.amazon.com/{service}/tb/creds`
+   - Examples: `/console/tb/creds`, `/s3/tb/creds`, `/ec2/tb/creds`, `/lambda/tb/creds`
 2. The injected script clones the response before AWS consumes it
-3. Credentials are extracted from the JSON response:
+3. Credentials are extracted from the JSON response along with the service name:
    ```json
    {
      "accessKeyId": "ASIA...",
@@ -33,9 +34,9 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
      "expiration": "2026-01-15T00:51:45.000Z"
    }
    ```
-4. Credentials are emitted via `window.dispatchEvent()`
-5. The isolated content script catches this and stores to `chrome.storage.local`
-6. The popup displays whatever credentials have been captured
+4. Credentials are emitted via `window.dispatchEvent()` with service identifier
+5. The isolated content script catches this and stores to `chrome.storage.local` keyed by service
+6. The popup displays service tabs to switch between captured credentials
 
 <img width="940" height="701" alt="image" src="https://github.com/user-attachments/assets/9203fb01-4ff2-4ba3-8f5e-e409cc40aebb" />
 
@@ -43,7 +44,8 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
 
 ## Features
 
-- 🔐 **Automatic credential capture** - Intercepts browserCreds API responses
+- 🔐 **Automatic credential capture** - Intercepts credentials from any AWS service endpoint
+- 🗂️ **Multi-service support** - Capture and manage credentials for S3, EC2, Lambda, and any other AWS service separately
 - 📋 **One-click copy** - Copy individual fields or formatted output
 - 📄 **Multiple export formats**:
   - Bash environment variables (`export AWS_...`)
@@ -51,6 +53,7 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
   - AWS credentials file format (`~/.aws/credentials`)
   - JSON format
 - ⏰ **Expiry tracking** - Shows when credentials will expire
+- 🧹 **Flexible clearing** - Clear credentials for a single service or all at once
 - 🎨 **Dark theme UI** - Clean interface matching AWS Console aesthetics
 
 ## Installation
@@ -84,13 +87,15 @@ Firefox requires modifications for Manifest V3. For Firefox:
 1. **Install the extension** (see above)
 2. **Log into AWS Console** - Navigate to [console.aws.amazon.com](https://console.aws.amazon.com)
 3. **Credentials are captured automatically** - When AWS Console loads or refreshes, it fetches credentials
-4. **Click the extension icon** - View captured credentials
-5. **Copy and use** - Select an export format and copy to your terminal
+4. **Navigate to different services** - Visit S3, EC2, Lambda, etc. to capture service-specific credentials
+5. **Click the extension icon** - View captured credentials with service tabs
+6. **Switch between services** - Click service tabs to view credentials for each service
+7. **Copy and use** - Select an export format and copy to your terminal
 
 ### If Credentials Don't Appear
 
 - **Refresh the AWS Console page** (F5) - This triggers a fresh credential fetch
-- **Navigate to a different AWS service** - Some pages trigger credential refreshes
+- **Navigate to a different AWS service** - Each service has its own credential endpoint
 - **Check that you're using federated/SSO login** - Works best with IAM Identity Center
 
 ## Export Formats
@@ -136,21 +141,27 @@ region = us-east-1
 ⚠️ **Important Security Notes:**
 
 - These are **temporary STS credentials** that expire (typically 15 mins depending on your IdP configuration)
+- Each service has **separately scoped credentials** with permissions limited to that service
 - **Never share or commit** these credentials
 - The extension only reads credentials from **your local browser session**
 - **No data is transmitted** anywhere external—everything stays local
-- Credentials are stored in `chrome.storage.local` and cleared when you click "Clear Stored" or uninstall the extension
+- Credentials are stored in `chrome.storage.local` and cleared when you click "Clear Current", "Clear All", or uninstall the extension
 
 ## Troubleshooting
 
 ### "Waiting for credentials..."
 - **Refresh the AWS Console page** (most common fix)
 - Ensure you're logged in and on an actual AWS Console page
-- Try navigating to a different AWS service
+- Try navigating to a different AWS service - each service triggers its own credential fetch
+
+### Missing a specific service
+- Navigate directly to that service in the AWS Console (e.g., S3, EC2, Lambda)
+- Refresh the page while on that service
+- The service tab will appear once credentials are captured
 
 ### Credentials show but are expired
-- The extension shows the last captured credentials
-- Refresh the AWS Console to get fresh credentials
+- The extension shows the last captured credentials per service
+- Refresh the AWS Console page for that service to get fresh credentials
 
 ### Extension doesn't work
 - Check that you're on `*.console.aws.amazon.com`

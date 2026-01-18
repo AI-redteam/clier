@@ -20,9 +20,9 @@
 
   // Listen for intercepted credentials from the page context
   window.addEventListener('__AWS_CREDS_INTERCEPTED__', async (event) => {
-    const { credentials, source, timestamp } = event.detail;
-    
-    if (credentials && credentials.accessKeyId) {
+    const { credentials, service, source, timestamp } = event.detail;
+
+    if (credentials && credentials.accessKeyId && service) {
       // Extract region from current URL if not in credentials
       let region = credentials.region;
       if (!region) {
@@ -42,20 +42,28 @@
         pageUrl: window.location.href
       };
 
-      // Store in chrome.storage
+      // Store in chrome.storage, keyed by service
       try {
-        await chrome.storage.local.set({ 
-          awsCredentials: credentialData,
+        // Get existing credentials to preserve other services
+        const existing = await chrome.storage.local.get(['awsCredentials']);
+        const allCredentials = existing.awsCredentials || {};
+
+        // Update credentials for this service
+        allCredentials[service] = credentialData;
+
+        await chrome.storage.local.set({
+          awsCredentials: allCredentials,
           lastUpdated: Date.now()
         });
 
         // Notify background script
         chrome.runtime.sendMessage({
           type: 'CREDENTIALS_CAPTURED',
+          service: service,
           credentials: credentialData
         });
 
-        console.log('[clier] Credentials stored successfully');
+        console.log('[clier] Credentials stored for service:', service);
       } catch (e) {
         console.error('[clier] Failed to store credentials:', e);
       }

@@ -6,11 +6,12 @@
 (function() {
   'use strict';
 
-  // Pattern to match the credential endpoint
-  // Example: https://us-east-1.console.aws.amazon.com/console/tb/creds
-  const CRED_PATTERNS = [
-    /\/console\/tb\/creds/i
-  ];
+  // Pattern to match credential endpoints for any AWS service
+  // Examples:
+  //   https://us-east-1.console.aws.amazon.com/console/tb/creds
+  //   https://us-east-1.console.aws.amazon.com/s3/tb/creds
+  //   https://us-east-1.console.aws.amazon.com/ec2/tb/creds
+  const CRED_PATTERN = /\/([^\/]+)\/tb\/creds/i;
 
   // Store original fetch
   const originalFetch = window.fetch;
@@ -23,10 +24,12 @@
     // Call original fetch
     const response = await originalFetch.apply(this, args);
 
-    // Check if this is a credentials endpoint
-    const isCredentialRequest = CRED_PATTERNS.some(pattern => pattern.test(url));
+    // Check if this is a credentials endpoint and extract service name
+    const credMatch = url.match(CRED_PATTERN);
 
-    if (isCredentialRequest) {
+    if (credMatch) {
+      const service = credMatch[1]; // e.g., "console", "s3", "ec2"
+
       try {
         // Clone the response so we can read it without consuming it
         const clonedResponse = response.clone();
@@ -34,18 +37,19 @@
 
         // Look for credential patterns in the response
         const credentials = extractCredentials(data, url);
-        
+
         if (credentials && credentials.accessKeyId) {
-          // Emit event with credentials
+          // Emit event with credentials including service name
           window.dispatchEvent(new CustomEvent('__AWS_CREDS_INTERCEPTED__', {
             detail: {
               credentials: credentials,
+              service: service,
               source: url,
               timestamp: Date.now()
             }
           }));
 
-          console.log('[clier] Credentials intercepted from:', url);
+          console.log('[clier] Credentials intercepted from:', service, url);
         }
       } catch (e) {
         // Response might not be JSON, ignore
@@ -66,9 +70,11 @@
 
   XMLHttpRequest.prototype.send = function(...args) {
     const url = this._awsCredUrl || '';
-    const isCredentialRequest = CRED_PATTERNS.some(pattern => pattern.test(url));
+    const credMatch = url.match(CRED_PATTERN);
 
-    if (isCredentialRequest) {
+    if (credMatch) {
+      const service = credMatch[1];
+
       this.addEventListener('load', function() {
         try {
           const data = JSON.parse(this.responseText);
@@ -78,12 +84,13 @@
             window.dispatchEvent(new CustomEvent('__AWS_CREDS_INTERCEPTED__', {
               detail: {
                 credentials: credentials,
+                service: service,
                 source: url,
                 timestamp: Date.now()
               }
             }));
 
-            console.log('[clier] Credentials intercepted (XHR) from:', url);
+            console.log('[clier] Credentials intercepted (XHR) from:', service, url);
           }
         } catch (e) {
           // Response might not be JSON, ignore
@@ -95,7 +102,7 @@
   };
 
   /**
-   * Extract credentials from the /console/tb/creds response
+   * Extract credentials from /{service}/tb/creds response
    * Expected format:
    * {
    *   "accessKeyId": "ASIA...",
@@ -131,6 +138,6 @@
 
   // Signal that injection is complete
   window.dispatchEvent(new CustomEvent('__AWS_CREDS_INTERCEPTED_READY__'));
-  console.log('[clier] Interceptor installed - watching for /console/tb/creds');
+  console.log('[clier] Interceptor installed - watching for /{service}/tb/creds endpoints');
 
 })();
