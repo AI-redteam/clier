@@ -162,6 +162,9 @@ region = us-east-1
 
 The QR code contains a compact JSON with short keys to maximize capacity:
 
+<img width="779" height="648" alt="Screenshot 2026-01-17 at 10 04 17 PM" src="https://github.com/user-attachments/assets/6435d9a8-dfe6-40af-98ce-581c5cf99c6b" />
+
+
 ```json
 {
   "a": "ASIAXXXXXXXXXXX",
