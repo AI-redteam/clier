@@ -14,6 +14,8 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 > Console → CLI credentials. The reverse of [consoler](https://github.com/NetSPI/aws_consoler).
+>
+> Pronounced: see-el-eye-er
 
 **The only tool that can extract AWS Console credentials.** AWS intentionally stores these credentials in the JavaScript heap only—not in cookies, localStorage, or anywhere extractable. They're designed to be inaccessible and auto-expire when you close the tab. clier intercepts them at the network layer before they disappear into memory, making the impossible possible.
 
