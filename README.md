@@ -11,7 +11,15 @@
 
 > Console → CLI credentials. The reverse of [consoler](https://github.com/NetSPI/aws_consoler).
 
-A browser extension that intercepts and displays AWS STS temporary credentials from your AWS Console session, making them easy to copy for use in CLI tools, scripts, or local development. Supports **multiple AWS services** - each service (S3, EC2, Lambda, etc.) has its own scoped credentials that can be captured and exported independently.
+**The only tool that can extract AWS Console credentials.** AWS intentionally stores these credentials in the JavaScript heap only—not in cookies, localStorage, or anywhere extractable. They're designed to be inaccessible and auto-expire when you close the tab. clier intercepts them at the network layer before they disappear into memory, making the impossible possible.
+
+Perfect for:
+- **Pentesters** - Extract credentials from compromised sessions for offline analysis
+- **Developers in locked-down environments** - Get CLI access when you only have console access
+- **Airgapped VDI users** - Bridge the gap between restricted console-only environments and your local tools
+- **Anyone stuck with SSO/federated console access** - Finally use the AWS CLI without begging for access keys
+
+Supports **multiple AWS services** - each service (S3, EC2, Lambda, etc.) has its own scoped credentials that can be captured and exported independently.
 
 ## How It Works
 
@@ -196,6 +204,91 @@ clier/
 
 MIT License - Feel free to modify and distribute.
 
+## Pentester Workflow
+
+This section describes how clier can be used during authorized AWS security assessments.
+
+### Scenario: Post-Access Credential Extraction
+
+After gaining access to a target's workstation or browser session (via phishing simulation, physical access during an engagement, or compromised RDP/VDI session):
+
+1. **Install clier** on the target browser (or use a portable/pre-configured browser)
+2. **Navigate to AWS Console** - If the user has an active SSO session, you'll land authenticated
+3. **Enumerate services** - Visit each AWS service the target might have access to:
+   ```
+   S3 → EC2 → Lambda → IAM → RDS → Secrets Manager → etc.
+   ```
+4. **Capture scoped credentials** - Each service visit captures that service's scoped STS credentials
+5. **Export and exfiltrate** - Copy credentials in your preferred format for offline analysis
+
+### Scenario: Privilege & Access Scope Analysis
+
+When assessing what a compromised identity can actually do:
+
+1. **Capture credentials from multiple services** - Navigate through the console capturing each service's credentials
+2. **Compare credential scopes** - Each service may have different IAM permissions:
+   ```bash
+   # Test S3 credentials
+   export AWS_ACCESS_KEY_ID="<s3-creds>"
+   aws s3 ls
+
+   # Test EC2 credentials
+   export AWS_ACCESS_KEY_ID="<ec2-creds>"
+   aws ec2 describe-instances
+   ```
+3. **Identify permission boundaries** - Some services may have broader access than others
+4. **Test for privilege escalation** - Use tools like [Pacu](https://github.com/RhinoSecurityLabs/pacu) or [enumerate-iam](https://github.com/andresriancho/enumerate-iam) with captured credentials
+
+### Scenario: Lateral Movement via CLI
+
+Console access and CLI access may have different effective permissions:
+
+1. **Capture service credentials** via clier
+2. **Use CLI to access resources** that may have different access controls:
+   ```bash
+   # Access S3 buckets that might not be visible in console
+   aws s3 ls s3://internal-bucket --recursive
+
+   # Pull secrets that require CLI
+   aws secretsmanager get-secret-value --secret-id prod/db/creds
+   ```
+3. **Pivot to other accounts** - If the role has `sts:AssumeRole` permissions:
+   ```bash
+   aws sts assume-role --role-arn arn:aws:iam::TARGET:role/CrossAccountRole --role-session-name pivot
+   ```
+
+### Scenario: Airgapped VDI / Restricted Environment Breakout
+
+Many organizations restrict AWS access to locked-down VDI environments with no CLI, no local tools, and no way to install software. Console-only access is meant to be a security control. clier breaks that assumption:
+
+1. **Install clier in the VDI browser** - Most VDIs allow browser extensions, or use a portable browser
+2. **Authenticate to AWS Console** via your normal SSO/federated flow
+3. **Navigate to the services you need** - Capture credentials for S3, Lambda, Secrets Manager, etc.
+4. **Exfiltrate credentials** - Options depending on your restrictions:
+   - **Copy/paste** - If clipboard works between VDI and local machine
+   - **Type them out** - Manual but works when clipboard is blocked
+   - **Screenshot/photo** - JSON format is QR-code friendly if you're desperate
+   - **Email to yourself** - If webmail is accessible
+5. **Use credentials on your local machine**:
+   ```bash
+   # Paste the captured bash export format
+   export AWS_ACCESS_KEY_ID="ASIA..."
+   export AWS_SECRET_ACCESS_KEY="..."
+   export AWS_SESSION_TOKEN="..."
+
+   # Now you have CLI access outside the VDI
+   aws s3 cp s3://restricted-bucket/data.csv ./
+   ```
+
+**Why this matters:** Organizations assume console-only VDI access prevents data exfiltration via CLI. clier proves that assumption wrong—if a user can see it in the console, they can now script it externally.
+
+### Tips for Engagements
+
+- **Capture early, use later** - Credentials expire in ~15 mins, but capturing multiple services gives you a map of access
+- **Screenshot the popup** - Document captured services for your report
+- **Check credential expiry** - The extension shows time remaining; refresh the console page to get fresh credentials
+- **Clear traces** - Use "Clear All" before returning the system; credentials are only stored in `chrome.storage.local`
+
 ## Disclaimer
 
-This tool is for **legitimate development and administrative purposes only**. Always follow your organization's security policies regarding credential handling. This is not an official AWS tool.
+This tool is for **authorized security testing and legitimate development purposes only**. Always obtain proper authorization before testing. Follow your organization's security policies and rules of engagement. This is not an official AWS tool.
