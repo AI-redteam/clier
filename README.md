@@ -1,13 +1,17 @@
 
 
 ```
- ▗▄▄▖▗▖   ▗▄▄▄▖▗▄▄▄▖▗▄▄▖ 
+ ▗▄▄▖▗▖   ▗▄▄▄▖▗▄▄▄▖▗▄▄▖
 ▐▌   ▐▌     █  ▐▌   ▐▌ ▐▌
 ▐▌   ▐▌     █  ▐▛▀▀▘▐▛▀▚▖
-▝▚▄▄▖▐▙▄▄▖▗▄█▄▖▐▙▄▄▖▐▌ ▐▌                      
+▝▚▄▄▖▐▙▄▄▖▗▄█▄▖▐▙▄▄▖▐▌ ▐▌
 ```
-                                               
-                         
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Chrome](https://img.shields.io/badge/Chrome-Supported-4285F4?logo=googlechrome&logoColor=white)](https://www.google.com/chrome/)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)](https://developer.chrome.com/docs/extensions/mv3/intro/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 > Console → CLI credentials. The reverse of [consoler](https://github.com/NetSPI/aws_consoler).
 
