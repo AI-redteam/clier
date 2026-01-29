@@ -89,6 +89,7 @@ This extension uses **network interception** (monkey-patching `window.fetch` and
    - Chrome: `chrome://extensions`
    - Edge: `edge://extensions`
    - Brave: `brave://extensions`
+   - Safari: **Uh there is currently an issue with scrolling the ext in Safari so probably don't use it**
 3. Enable **Developer mode** (toggle in the top right)
 4. Click **Load unpacked**
 5. Select the `clier` folder
